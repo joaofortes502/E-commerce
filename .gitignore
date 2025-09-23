@@ -1,0 +1,23 @@
+# Dependencias
+backend/node_modules/
+frontend/node_modules/
+
+# Arquivos de produção
+backend/dist/
+frontend/build/
+
+# Banco de dados
+backend/database/*.db 
+backend/database/*.sqlite
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variaveis de ambiente
+.env
+.env.local
+
+# Sistema operacional
+Thumbs.db
+
