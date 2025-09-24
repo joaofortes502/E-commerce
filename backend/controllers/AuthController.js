@@ -49,7 +49,7 @@ class AuthController {
         } catch (error) {
             console.error('Erro no registro:', error.message);
             
-            if (error.message.includes('já está em uso')) {
+            if (error.message.includes('já registrado')) {
                 res.status(409).json({
                     success: false,
                     message: 'Este email já está cadastrado'
@@ -57,7 +57,7 @@ class AuthController {
             } else {
                 res.status(500).json({
                     success: false,
-                    message: 'Erro interno do servidor'
+                    message: "Erro interno do servidor"
                 });
             }
         }
