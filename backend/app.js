@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const {initializeDatabase, createDefaultAdmin} = require('./database/init');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,8 +17,20 @@ app.get('/', (req, res) =>{
     })
 })
 
-app.listen(PORT, () =>{
-    console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}`);
-})
+async function startServer(){
+    try {
+        await initializeDatabase();
+        await createDefaultAdmin();
+
+        app.listen(PORT, () =>{
+            console.log(`Servidor rodando na porta ${PORT}`);
+            console.log(`Acesse: http://localhost:${PORT}`);
+        })
+    } catch(error){
+        console.error("Erro ao iniciar o servidor:", error);
+        process.exit(1);
+    }
+}
+
+startServer();
 
