@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const {initializeDatabase, createDefaultAdmin} = require('./database/init');
+const {initializeDatabase, createDefaultAdmin, createSampleProducts} = require('./database/init');
 const authRoutes = require('./routes/auth');
 
 const app = express();
@@ -24,6 +24,7 @@ async function startServer(){
     try {
         await initializeDatabase();
         await createDefaultAdmin();
+        await createSampleProducts();
 
         app.listen(PORT, () =>{
             console.log(`Servidor rodando na porta ${PORT}`);

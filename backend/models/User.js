@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, '../database.sqlite');
+const DB_PATH = path.join(__dirname, '../database/sqlite.db');
 
 class User {
 
@@ -27,7 +27,7 @@ class User {
     }
 
     static async register(userData){
-        const {name, email, password, type="client"} = userData;
+        const {name, email, password, type="cliente"} = userData;
 
         return new Promise(async (resolve, reject)=>{
             try {
