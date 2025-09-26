@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Criamos o contexto que vai armazenar informações de autenticação
+// contexto que vai armazenar informações de autenticação
 const AuthContext = createContext();
 
 // Hook personalizado para usar o contexto de autenticação em qualquer componente
