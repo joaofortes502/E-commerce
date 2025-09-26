@@ -73,8 +73,25 @@ const optionalAuth = (req, res, next) => {
     next(); 
 };
 
+const optionalAuthForCart = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (token) {
+        jwt.verify(token, JWT_SECRET, (err, user) => {
+            if (!err) {
+                req.user = user; 
+            }
+           
+        });
+    }
+    
+    next();
+};
+
 module.exports = {
     authenticateToken,
     requireAdmin,
-    optionalAuth
+    optionalAuth,
+    optionalAuthForCart
 };

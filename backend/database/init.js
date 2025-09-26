@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Cart = require('../models/Cart');
 
 async function initializeDatabase() {
     try {
@@ -10,7 +11,9 @@ async function initializeDatabase() {
     
         await Product.createTable();
         console.log('Tabela products criada');
-        // await Order.createTable();
+        
+        await Cart.createTable();
+        console.log('Tabela cart_itens criada')
         // await OrderItem.createTable();
         
         console.log('Banco de dados inicializado com sucesso!');
