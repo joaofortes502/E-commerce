@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Cart = require('../models/Cart');
+const Order = require('../models/Order');
 
 async function initializeDatabase() {
     try {
@@ -14,8 +15,9 @@ async function initializeDatabase() {
         
         await Cart.createTable();
         console.log('Tabela cart_itens criada')
-        // await OrderItem.createTable();
         
+        await Order.createTables();
+        console.log('Tabele orders e orders_itens criadas');
         console.log('Banco de dados inicializado com sucesso!');
         
     } catch (error) {
@@ -28,11 +30,11 @@ async function createDefaultAdmin() {
     try {
         await User.register({
             name: 'Administrador',
-            email: 'admin@ecommerce.com',
-            password: 'admin123',
+            email: 'admin@admin.com',
+            password: '123456',
             type: 'admin'
         });
-        console.log('Usuário admin padrão criado (admin@ecommerce.com / admin123)');
+        console.log('Usuário admin padrão criado (admin@admin.com / 123456)');
     } catch (error) {
         if (error.message.includes('já está em uso')) {
             console.log('Usuário admin padrão já existe');
