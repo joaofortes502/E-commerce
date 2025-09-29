@@ -48,60 +48,31 @@ const Footer = () => {
                         </div>
 
                         <div className="footer-section">
-                            <h4 className="footer-subtitle">ℹ️ Informações</h4>
-                            <ul className="footer-links">
-                                <li><a href="#/about">Sobre Nós</a></li>
-                                <li><a href="#/contact">Contato</a></li>
-                                <li><a href="#/shipping">Entrega</a></li>
-                                <li><a href="#/returns">Devoluções</a></li>
-                                <li><a href="#/faq">FAQ</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="footer-section">
                             <h4 className="footer-subtitle">📞 Atendimento</h4>
                             <div className="contact-info">
                                 <div className="contact-item">
                                     <span className="contact-icon">📱</span>
-                                    <span>(11) 9999-9999</span>
+                                    <span>(51) 9999-9999</span>
                                 </div>
                                 <div className="contact-item">
                                     <span className="contact-icon">📧</span>
-                                    <span>contato@ecommerce.com</span>
+                                    <span>joaofortes@sou.faccat.br</span>
                                 </div>
                                 <div className="contact-item">
                                     <span className="contact-icon">🕐</span>
-                                    <span>Seg-Sex: 8h às 18h</span>
+                                    <span>Seg-Sex: 8h30 às 18h</span>
                                 </div>
                                 <div className="contact-item">
                                     <span className="contact-icon">📍</span>
-                                    <span>São Paulo, SP</span>
+                                    <span>Taquara, RS</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Seção de métodos de pagamento */}
-                    <div className="footer-payments">
-                        <h4 className="payments-title">💳 Formas de Pagamento</h4>
-                        <div className="payment-methods">
-                            <span className="payment-method" title="Cartão de Crédito">💳</span>
-                            <span className="payment-method" title="Cartão de Débito">💳</span>
-                            <span className="payment-method" title="PIX">📱</span>
-                            <span className="payment-method" title="Boleto">🧾</span>
-                            <span className="payment-method" title="PayPal">💰</span>
-                        </div>
-                    </div>
+                    
 
-                    {/* Seção de segurança */}
-                    <div className="footer-security">
-                        <h4 className="security-title">🔒 Compra Segura</h4>
-                        <div className="security-badges">
-                            <span className="security-badge" title="Site Seguro">🔐</span>
-                            <span className="security-badge" title="SSL Certificado">🛡️</span>
-                            <span className="security-badge" title="Dados Protegidos">🔒</span>
-                        </div>
-                    </div>
+                    
                 </div>
 
                 {/* Rodapé inferior */}
@@ -114,11 +85,6 @@ const Footer = () => {
                             </p>
                         </div>
                         
-                        <div className="legal-links">
-                            <a href="#/privacy">Política de Privacidade</a>
-                            <a href="#/terms">Termos de Uso</a>
-                            <a href="#/cookies">Cookies</a>
-                        </div>
                     </div>
 
                     {/* Informações técnicas */}
