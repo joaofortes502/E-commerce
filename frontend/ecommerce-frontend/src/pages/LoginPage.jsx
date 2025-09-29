@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; 
 
 const LoginPage = () => {
     // Estados do formulário
@@ -10,28 +12,17 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    // Simulação do contexto de autenticação - você substituirá pela importação real
-    const { login, isAuthenticated } = {
-        login: async (email, password) => {
-            // Simula uma requisição de login
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (email === 'admin@test.com' && password === '123456') {
-                return { success: true, user: { name: 'Admin', email, type: 'admin' } };
-            }
-            throw new Error('Credenciais inválidas');
-        },
-        isAuthenticated: () => false
-    };
+    const { login, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
     // Redireciona se já estiver logado
     useEffect(() => {
         if (isAuthenticated()) {
-            // Em produção: navigate('/');
-            window.location.hash = '#/';
+            navigate('/'); // Redireciona para a página inicial
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, navigate]);
 
-    // Atualiza os dados do formulário
+    // Atualiza os dados do formulário conforme o usuário digita
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -46,7 +37,7 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validações básicas
+        // Validações básicas no frontend antes de enviar ao backend
         if (!formData.email || !formData.password) {
             setError('Por favor, preencha todos os campos');
             return;
@@ -62,11 +53,8 @@ const LoginPage = () => {
             setError('');
 
             await login(formData.email, formData.password);
-            
-            // Login bem-sucedido - redireciona para página inicial
-            // Em produção: navigate('/');
-            window.location.hash = '#/';
 
+            
         } catch (err) {
             setError(err.message || 'Erro ao fazer login. Tente novamente.');
         } finally {
@@ -74,7 +62,7 @@ const LoginPage = () => {
         }
     };
 
-    // Validação de e-mail
+    // Validação de e-mail usando regex
     const isValidEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -168,23 +156,12 @@ const LoginPage = () => {
                         {/* Links adicionais */}
                         <div className="login-footer">
                             <div className="forgot-password">
-                                <a href="#/forgot-password">Esqueceu sua senha?</a>
+                                <a href="/forgot-password">Esqueceu sua senha?</a>
                             </div>
                             
                             <div className="signup-link">
                                 <span>Não tem uma conta? </span>
-                                <a href="#/register">Criar conta</a>
-                            </div>
-                        </div>
-
-                        {/* Dados de teste para demonstração */}
-                        <div className="demo-credentials">
-                            <h4>💡 Dados para teste:</h4>
-                            <div className="demo-item">
-                                <strong>Admin:</strong> admin@test.com / 123456
-                            </div>
-                            <div className="demo-item">
-                                <strong>Cliente:</strong> cliente@test.com / 123456
+                                <a href="/register">Criar conta</a>
                             </div>
                         </div>
                     </div>
@@ -221,7 +198,6 @@ const LoginPage = () => {
                     animation: slideUp 0.5s ease-out;
                 }
 
-                /* Cabeçalho do formulário */
                 .login-header {
                     text-align: center;
                     margin-bottom: 2rem;
@@ -239,7 +215,6 @@ const LoginPage = () => {
                     font-size: 1rem;
                 }
 
-                /* Formulário */
                 .login-form {
                     display: flex;
                     flex-direction: column;
@@ -322,7 +297,6 @@ const LoginPage = () => {
                     cursor: not-allowed;
                 }
 
-                /* Mensagem de erro */
                 .error-message {
                     background-color: #f8d7da;
                     color: #721c24;
@@ -333,7 +307,6 @@ const LoginPage = () => {
                     animation: shake 0.5s ease-in-out;
                 }
 
-                /* Botão de login */
                 .login-button {
                     padding: 1rem 2rem;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -372,7 +345,6 @@ const LoginPage = () => {
                     animation: spin 1s linear infinite;
                 }
 
-                /* Footer do login */
                 .login-footer {
                     margin-top: 2rem;
                     text-align: center;
@@ -401,32 +373,6 @@ const LoginPage = () => {
                     font-size: 0.95rem;
                 }
 
-                /* Credenciais de demonstração */
-                .demo-credentials {
-                    margin-top: 2rem;
-                    padding: 1rem;
-                    background-color: #e7f3ff;
-                    border: 1px solid #b8daff;
-                    border-radius: 8px;
-                    font-size: 0.85rem;
-                }
-
-                .demo-credentials h4 {
-                    margin-bottom: 0.75rem;
-                    color: #004085;
-                    font-size: 0.9rem;
-                }
-
-                .demo-item {
-                    margin-bottom: 0.5rem;
-                    color: #004085;
-                }
-
-                .demo-item:last-child {
-                    margin-bottom: 0;
-                }
-
-                /* Animações */
                 @keyframes slideUp {
                     from {
                         opacity: 0;
@@ -449,7 +395,6 @@ const LoginPage = () => {
                     100% { transform: rotate(360deg); }
                 }
 
-                /* Responsividade */
                 @media (max-width: 768px) {
                     .login-page {
                         padding: 1rem 0;

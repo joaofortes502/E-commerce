@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
     // Estados do componente
@@ -6,18 +8,8 @@ const Navbar = () => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [cartItemCount, setCartItemCount] = useState(0);
 
-    // Simulação dos contextos - você substituirá pelas importações reais
-    const { user, isAuthenticated, isAdmin, logout } = {
-        user: null, // { name: 'João Silva', email: 'joao@test.com', type: 'client' }
-        isAuthenticated: () => false,
-        isAdmin: () => false,
-        logout: () => console.log('Logout simulado')
-    };
-
-    const { summary, loadCart } = {
-        summary: { item_count: 0, total_quantity: 0, subtotal: '0.00' },
-        loadCart: async () => {}
-    };
+    const { user, isAuthenticated, isAdmin, logout } = useAuth();
+    const { summary, loadCart } = useCart();
 
     // Carrega dados do carrinho ao montar o componente
     useEffect(() => {

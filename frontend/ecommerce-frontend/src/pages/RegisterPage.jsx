@@ -1,247 +1,111 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterPage = () => {
-    // Estados do formulário
+    // Estados do formulário de registro
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         confirmPassword: '',
-        type: 'client'
+        type: 'cliente' // Tipo padrão de usuário
     });
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
+    const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [success, setSuccess] = useState(false);
 
-    // Simulação do contexto de autenticação - você substituirá pela importação real
-    const { register, isAuthenticated } = {
-        register: async (name, email, password, type) => {
-            // Simula uma requisição de registro
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (email === 'existe@test.com') {
-                throw new Error('Este e-mail já está em uso');
-            }
-            return { success: true, user: { name, email, type } };
-        },
-        isAuthenticated: () => false
-    };
+    // Hook do contexto de autenticação - fornece função de registro
+    const { register, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
-    // Redireciona se já estiver logado
+    // Se usuário já está logado, redireciona
     useEffect(() => {
         if (isAuthenticated()) {
-            // Em produção: navigate('/');
-            window.location.hash = '#/';
+            navigate('/');
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, navigate]);
 
-    // Atualiza os dados do formulário
+    // Atualiza estado conforme usuário digita
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-        
-        // Limpa erros específicos quando usuário começa a digitar
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
-        }
+        if (error) setError('');
     };
 
-    // Validações do formulário
+    // Valida os dados do formulário antes de enviar
     const validateForm = () => {
-        const newErrors = {};
-
-        // Validação do nome
-        if (!formData.name.trim()) {
-            newErrors.name = 'Nome é obrigatório';
-        } else if (formData.name.trim().length < 2) {
-            newErrors.name = 'Nome deve ter pelo menos 2 caracteres';
+        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+            setError('Por favor, preencha todos os campos');
+            return false;
         }
 
-        // Validação do e-mail
-        if (!formData.email) {
-            newErrors.email = 'E-mail é obrigatório';
-        } else if (!isValidEmail(formData.email)) {
-            newErrors.email = 'Formato de e-mail inválido';
+        if (!isValidEmail(formData.email)) {
+            setError('Por favor, insira um e-mail válido');
+            return false;
         }
 
-        // Validação da senha
-        if (!formData.password) {
-            newErrors.password = 'Senha é obrigatória';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+        if (formData.password.length < 6) {
+            setError('A senha deve ter pelo menos 6 caracteres');
+            return false;
         }
 
-        // Validação da confirmação de senha
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Senhas não coincidem';
+        if (formData.password !== formData.confirmPassword) {
+            setError('As senhas não coincidem');
+            return false;
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    // Validação de e-mail
-    const isValidEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+        return true;
     };
 
     // Submete o formulário de registro
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        
         if (!validateForm()) {
             return;
         }
 
         try {
             setLoading(true);
+            setError('');
 
-            await register(
-                formData.name.trim(),
-                formData.email.trim().toLowerCase(),
-                formData.password,
-                formData.type
-            );
-
-            setSuccess(true);
+            // Chama a função de registro do contexto
+            // Ela cria o usuário no backend e faz login automaticamente
+            await register(formData.name, formData.email, formData.password, formData.type);
             
-            // Redireciona após sucesso
-            setTimeout(() => {
-                // Em produção: navigate('/');
-                window.location.hash = '#/';
-            }, 2000);
-
+            // Registro bem-sucedido - usuário será redirecionado pelo useEffect
+            
         } catch (err) {
-            setErrors({
-                submit: err.message || 'Erro ao criar conta. Tente novamente.'
-            });
+            setError(err.message || 'Erro ao criar conta. Tente novamente.');
         } finally {
             setLoading(false);
         }
     };
 
-    // Alterna visibilidade das senhas
-    const togglePasswordVisibility = (field) => {
-        if (field === 'password') {
-            setShowPassword(prev => !prev);
-        } else {
-            setShowConfirmPassword(prev => !prev);
-        }
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     };
-
-    // Verifica força da senha
-    const getPasswordStrength = (password) => {
-        if (!password) return { level: 0, text: '', color: '' };
-        
-        let strength = 0;
-        if (password.length >= 6) strength++;
-        if (password.length >= 8) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-        const levels = [
-            { level: 0, text: '', color: '' },
-            { level: 1, text: 'Muito fraca', color: '#dc3545' },
-            { level: 2, text: 'Fraca', color: '#fd7e14' },
-            { level: 3, text: 'Regular', color: '#ffc107' },
-            { level: 4, text: 'Forte', color: '#28a745' },
-            { level: 5, text: 'Muito forte', color: '#20c997' }
-        ];
-
-        return levels[strength];
-    };
-
-    if (success) {
-        return (
-            <div className="register-page">
-                <div className="container">
-                    <div className="success-card">
-                        <div className="success-icon">✅</div>
-                        <h1>Conta criada com sucesso!</h1>
-                        <p>Você será redirecionado em alguns segundos...</p>
-                        <a href="#/" className="continue-btn">Continuar</a>
-                    </div>
-                </div>
-                
-                <style jsx>{`
-                    .register-page {
-                        min-height: calc(100vh - 200px);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                    }
-                    .success-card {
-                        background: white;
-                        border-radius: 16px;
-                        padding: 3rem;
-                        text-align: center;
-                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-                        animation: slideUp 0.5s ease-out;
-                    }
-                    .success-icon {
-                        font-size: 4rem;
-                        margin-bottom: 1rem;
-                    }
-                    .success-card h1 {
-                        color: #28a745;
-                        margin-bottom: 1rem;
-                    }
-                    .success-card p {
-                        color: #666;
-                        margin-bottom: 2rem;
-                    }
-                    .continue-btn {
-                        display: inline-block;
-                        padding: 1rem 2rem;
-                        background-color: #28a745;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        transition: background-color 0.2s;
-                    }
-                    .continue-btn:hover {
-                        background-color: #218838;
-                    }
-                    @keyframes slideUp {
-                        from { opacity: 0; transform: translateY(30px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                `}</style>
-            </div>
-        );
-    }
-
-    const passwordStrength = getPasswordStrength(formData.password);
 
     return (
         <div className="register-page">
             <div className="container">
                 <div className="register-wrapper">
                     <div className="register-card">
-                        {/* Cabeçalho */}
                         <div className="register-header">
                             <h1>Criar Conta</h1>
-                            <p>Preencha os dados para criar sua conta</p>
+                            <p>Preencha os dados para se cadastrar</p>
                         </div>
 
-                        {/* Formulário de registro */}
                         <form onSubmit={handleSubmit} className="register-form">
                             {/* Campo de nome */}
                             <div className="form-group">
-                                <label htmlFor="name">Nome completo</label>
+                                <label htmlFor="name">Nome Completo</label>
                                 <div className="input-wrapper">
                                     <input
                                         type="text"
@@ -251,13 +115,9 @@ const RegisterPage = () => {
                                         onChange={handleInputChange}
                                         placeholder="Seu nome completo"
                                         disabled={loading}
-                                        className={errors.name ? 'error' : ''}
                                     />
                                     <span className="input-icon">👤</span>
                                 </div>
-                                {errors.name && (
-                                    <span className="field-error">{errors.name}</span>
-                                )}
                             </div>
 
                             {/* Campo de e-mail */}
@@ -272,30 +132,8 @@ const RegisterPage = () => {
                                         onChange={handleInputChange}
                                         placeholder="seu@email.com"
                                         disabled={loading}
-                                        className={errors.email ? 'error' : ''}
                                     />
                                     <span className="input-icon">📧</span>
-                                </div>
-                                {errors.email && (
-                                    <span className="field-error">{errors.email}</span>
-                                )}
-                            </div>
-
-                            {/* Campo de tipo de usuário */}
-                            <div className="form-group">
-                                <label htmlFor="type">Tipo de conta</label>
-                                <div className="input-wrapper">
-                                    <select
-                                        id="type"
-                                        name="type"
-                                        value={formData.type}
-                                        onChange={handleInputChange}
-                                        disabled={loading}
-                                    >
-                                        <option value="client">Cliente</option>
-                                        <option value="admin">Administrador</option>
-                                    </select>
-                                    <span className="input-icon">🏷️</span>
                                 </div>
                             </div>
 
@@ -309,45 +147,23 @@ const RegisterPage = () => {
                                         name="password"
                                         value={formData.password}
                                         onChange={handleInputChange}
-                                        placeholder="Sua senha"
+                                        placeholder="Mínimo 6 caracteres"
                                         disabled={loading}
-                                        className={errors.password ? 'error' : ''}
                                     />
                                     <button
                                         type="button"
                                         className="password-toggle"
-                                        onClick={() => togglePasswordVisibility('password')}
+                                        onClick={() => setShowPassword(!showPassword)}
                                         disabled={loading}
                                     >
                                         {showPassword ? '🙈' : '👁️'}
                                     </button>
                                 </div>
-                                {errors.password && (
-                                    <span className="field-error">{errors.password}</span>
-                                )}
-                                {/* Indicador de força da senha */}
-                                {formData.password && (
-                                    <div className="password-strength">
-                                        <div 
-                                            className="strength-bar"
-                                            style={{ 
-                                                width: `${(passwordStrength.level / 5) * 100}%`,
-                                                backgroundColor: passwordStrength.color 
-                                            }}
-                                        ></div>
-                                        <span 
-                                            className="strength-text"
-                                            style={{ color: passwordStrength.color }}
-                                        >
-                                            {passwordStrength.text}
-                                        </span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Campo de confirmação de senha */}
                             <div className="form-group">
-                                <label htmlFor="confirmPassword">Confirmar senha</label>
+                                <label htmlFor="confirmPassword">Confirmar Senha</label>
                                 <div className="input-wrapper">
                                     <input
                                         type={showConfirmPassword ? 'text' : 'password'}
@@ -357,33 +173,29 @@ const RegisterPage = () => {
                                         onChange={handleInputChange}
                                         placeholder="Digite a senha novamente"
                                         disabled={loading}
-                                        className={errors.confirmPassword ? 'error' : ''}
                                     />
                                     <button
                                         type="button"
                                         className="password-toggle"
-                                        onClick={() => togglePasswordVisibility('confirm')}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         disabled={loading}
                                     >
                                         {showConfirmPassword ? '🙈' : '👁️'}
                                     </button>
                                 </div>
-                                {errors.confirmPassword && (
-                                    <span className="field-error">{errors.confirmPassword}</span>
-                                )}
                             </div>
 
-                            {/* Mensagem de erro geral */}
-                            {errors.submit && (
+                            {/* Mensagem de erro */}
+                            {error && (
                                 <div className="error-message">
-                                    ⚠️ {errors.submit}
+                                    ⚠️ {error}
                                 </div>
                             )}
 
                             {/* Botão de submissão */}
                             <button
                                 type="submit"
-                                disabled={loading || Object.keys(errors).length > 0}
+                                disabled={loading}
                                 className="register-button"
                             >
                                 {loading ? (
@@ -392,16 +204,16 @@ const RegisterPage = () => {
                                         Criando conta...
                                     </>
                                 ) : (
-                                    '✨ Criar conta'
+                                    '✨ Criar Conta'
                                 )}
                             </button>
                         </form>
 
-                        {/* Footer do registro */}
+                        {/* Link para login */}
                         <div className="register-footer">
                             <div className="login-link">
                                 <span>Já tem uma conta? </span>
-                                <a href="#/login">Fazer login</a>
+                                <a href="/login">Fazer login</a>
                             </div>
                         </div>
                     </div>
@@ -420,7 +232,7 @@ const RegisterPage = () => {
 
                 .container {
                     width: 100%;
-                    max-width: 550px;
+                    max-width: 500px;
                     padding: 0 1rem;
                 }
 
@@ -438,7 +250,6 @@ const RegisterPage = () => {
                     animation: slideUp 0.5s ease-out;
                 }
 
-                /* Cabeçalho */
                 .register-header {
                     text-align: center;
                     margin-bottom: 2rem;
@@ -456,11 +267,10 @@ const RegisterPage = () => {
                     font-size: 1rem;
                 }
 
-                /* Formulário */
                 .register-form {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
+                    gap: 1.25rem;
                 }
 
                 .form-group {
@@ -483,8 +293,7 @@ const RegisterPage = () => {
                     align-items: center;
                 }
 
-                .input-wrapper input,
-                .input-wrapper select {
+                .input-wrapper input {
                     width: 100%;
                     padding: 1rem 1rem 1rem 3rem;
                     border: 2px solid #e9ecef;
@@ -494,22 +303,14 @@ const RegisterPage = () => {
                     background-color: #f8f9fa;
                 }
 
-                .input-wrapper input:focus,
-                .input-wrapper select:focus {
+                .input-wrapper input:focus {
                     outline: none;
                     border-color: #667eea;
                     background-color: white;
                     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
                 }
 
-                .input-wrapper input.error,
-                .input-wrapper select.error {
-                    border-color: #dc3545;
-                    background-color: #fff5f5;
-                }
-
-                .input-wrapper input:disabled,
-                .input-wrapper select:disabled {
+                .input-wrapper input:disabled {
                     opacity: 0.7;
                     cursor: not-allowed;
                 }
@@ -543,37 +344,6 @@ const RegisterPage = () => {
                     cursor: not-allowed;
                 }
 
-                /* Erros de campo específico */
-                .field-error {
-                    color: #dc3545;
-                    font-size: 0.85rem;
-                    margin-top: 0.25rem;
-                    font-weight: 500;
-                }
-
-                /* Força da senha */
-                .password-strength {
-                    margin-top: 0.5rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-
-                .strength-bar {
-                    height: 4px;
-                    border-radius: 2px;
-                    transition: all 0.3s ease;
-                    min-width: 20px;
-                }
-
-                .strength-text {
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                /* Mensagem de erro geral */
                 .error-message {
                     background-color: #f8d7da;
                     color: #721c24;
@@ -584,7 +354,6 @@ const RegisterPage = () => {
                     animation: shake 0.5s ease-in-out;
                 }
 
-                /* Botão de registro */
                 .register-button {
                     padding: 1rem 2rem;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -623,7 +392,6 @@ const RegisterPage = () => {
                     animation: spin 1s linear infinite;
                 }
 
-                /* Footer do registro */
                 .register-footer {
                     margin-top: 2rem;
                     text-align: center;
@@ -646,7 +414,6 @@ const RegisterPage = () => {
                     text-decoration: underline;
                 }
 
-                /* Animações */
                 @keyframes slideUp {
                     from {
                         opacity: 0;
@@ -669,7 +436,6 @@ const RegisterPage = () => {
                     100% { transform: rotate(360deg); }
                 }
 
-                /* Responsividade */
                 @media (max-width: 768px) {
                     .register-page {
                         padding: 1rem 0;
@@ -686,8 +452,7 @@ const RegisterPage = () => {
                         font-size: 1.75rem;
                     }
 
-                    .input-wrapper input,
-                    .input-wrapper select {
+                    .input-wrapper input {
                         padding: 0.875rem 0.875rem 0.875rem 2.75rem;
                     }
 
@@ -697,10 +462,6 @@ const RegisterPage = () => {
 
                     .password-toggle {
                         right: 0.875rem;
-                    }
-
-                    .register-form {
-                        gap: 1.25rem;
                     }
                 }
 
@@ -716,10 +477,6 @@ const RegisterPage = () => {
                     .register-header h1 {
                         font-size: 1.5rem;
                     }
-
-                    .form-group {
-                        gap: 1rem;
-                    }
                 }
             `}</style>
         </div>
@@ -727,4 +484,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-                
