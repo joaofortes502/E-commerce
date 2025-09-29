@@ -17,33 +17,18 @@ const Footer = () => {
                                 Sua loja online com os melhores produtos e preços. 
                                 Compre com segurança e comodidade.
                             </p>
-                            <div className="social-links">
-                                <a href="#" className="social-link" title="Facebook">📘</a>
-                                <a href="#" className="social-link" title="Instagram">📷</a>
-                                <a href="#" className="social-link" title="Twitter">🐦</a>
-                                <a href="#" className="social-link" title="YouTube">📺</a>
-                            </div>
                         </div>
 
-                        <div className="footer-section">
-                            <h4 className="footer-subtitle">🛒 Comprar</h4>
-                            <ul className="footer-links">
-                                <li><a href="#/">Todos os Produtos</a></li>
-                                <li><a href="#/category/eletronicos">Eletrônicos</a></li>
-                                <li><a href="#/category/roupas">Roupas</a></li>
-                                <li><a href="#/category/casa">Casa & Jardim</a></li>
-                                <li><a href="#/cart">Meu Carrinho</a></li>
-                            </ul>
-                        </div>
+                        
 
                         <div className="footer-section">
                             <h4 className="footer-subtitle">👤 Conta</h4>
                             <ul className="footer-links">
-                                <li><a href="#/login">Fazer Login</a></li>
-                                <li><a href="#/register">Criar Conta</a></li>
-                                <li><a href="#/profile">Meu Perfil</a></li>
-                                <li><a href="#/orders">Meus Pedidos</a></li>
-                                <li><a href="#/wishlist">Lista de Desejos</a></li>
+                                <li><a href="/login">Fazer Login</a></li>
+                                <li><a href="/register">Criar Conta</a></li>
+                                <li><a href="/profile">Meu Perfil</a></li>
+                                <li><a href="/orders">Meus Pedidos</a></li>
+                                <li><a href="/wishlist">Lista de Desejos</a></li>
                             </ul>
                         </div>
 
@@ -206,6 +191,8 @@ const Footer = () => {
                     display: flex;
                     flex-direction: column;
                     gap: 0.75rem;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .contact-item {
@@ -221,75 +208,6 @@ const Footer = () => {
                     min-width: 20px;
                 }
 
-                /* Métodos de pagamento */
-                .footer-payments {
-                    padding: 1.5rem 0;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                    text-align: center;
-                }
-
-                .payments-title {
-                    font-size: 1.1rem;
-                    margin-bottom: 1rem;
-                    color: #ecf0f1;
-                }
-
-                .payment-methods {
-                    display: flex;
-                    justify-content: center;
-                    gap: 1rem;
-                    flex-wrap: wrap;
-                }
-
-                .payment-method {
-                    background-color: rgba(255, 255, 255, 0.1);
-                    padding: 0.75rem;
-                    border-radius: 8px;
-                    font-size: 1.5rem;
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                }
-
-                .payment-method:hover {
-                    background-color: rgba(255, 255, 255, 0.2);
-                    transform: scale(1.1);
-                }
-
-                /* Segurança */
-                .footer-security {
-                    padding: 1.5rem 0;
-                    text-align: center;
-                }
-
-                .security-title {
-                    font-size: 1.1rem;
-                    margin-bottom: 1rem;
-                    color: #ecf0f1;
-                }
-
-                .security-badges {
-                    display: flex;
-                    justify-content: center;
-                    gap: 1rem;
-                    flex-wrap: wrap;
-                }
-
-                .security-badge {
-                    background-color: rgba(46, 204, 113, 0.2);
-                    color: #2ecc71;
-                    padding: 0.75rem;
-                    border-radius: 8px;
-                    font-size: 1.5rem;
-                    border: 1px solid rgba(46, 204, 113, 0.3);
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                }
-
-                .security-badge:hover {
-                    background-color: rgba(46, 204, 113, 0.3);
-                    transform: scale(1.1);
-                }
 
                 /* Rodapé inferior */
                 .footer-bottom {
@@ -321,24 +239,6 @@ const Footer = () => {
                     font-size: 0.8rem !important;
                     color: #95a5a6 !important;
                     font-style: italic;
-                }
-
-                .legal-links {
-                    display: flex;
-                    gap: 2rem;
-                    flex-wrap: wrap;
-                }
-
-                .legal-links a {
-                    color: #bdc3c7;
-                    text-decoration: none;
-                    font-size: 0.9rem;
-                    transition: color 0.3s ease;
-                    white-space: nowrap;
-                }
-
-                .legal-links a:hover {
-                    color: white;
                 }
 
                 /* Informações técnicas */
