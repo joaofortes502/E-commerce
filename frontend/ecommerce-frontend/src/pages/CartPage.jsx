@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const CartPage = () => {
     // Estados para gerenciar o carrinho
-    const [cartData, setCartData] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState({});
     const [notification, setNotification] = useState(null);
 
-    // Simulação dos contextos - você substituirá pelas importações reais
     const { 
         items, 
         loading: cartLoading, 
@@ -18,23 +17,13 @@ const CartPage = () => {
         loadCart,
         hasCartIssues,
         getItemsWithIssues
-    } = {
-        items: [],
-        loading: false,
-        summary: { subtotal: '0.00', item_count: 0, total_quantity: 0 },
-        updateItemQuantity: async () => ({ success: true }),
-        removeItem: async () => ({ success: true }),
-        clearCart: async () => ({ success: true }),
-        loadCart: async () => {},
-        hasCartIssues: () => false,
-        getItemsWithIssues: () => ({ stock_issues: [], price_changes: [] })
-    };
+    } = useCart();
 
-    const { isAuthenticated } = { isAuthenticated: () => false };
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
         loadCart();
-    }, []);
+    },[]);
 
     // Função para mostrar notificações
     const showNotification = (message, type = 'info') => {
@@ -111,7 +100,7 @@ const CartPage = () => {
         }
 
         // Redirecionar para checkout: navigate('/checkout');
-        window.location.hash = '#/checkout';
+        window.location.hash = '/checkout';
     };
 
     // Formatação de preço
@@ -244,7 +233,7 @@ const CartPage = () => {
                                         {/* Informações do produto */}
                                         <div className="item-info">
                                             <h3 className="item-name">
-                                                <a href={`#/products/${item.product_id}`}>
+                                                <a href={`/products/${item.product_id}`}>
                                                     {item.product_name}
                                                 </a>
                                             </h3>
@@ -346,7 +335,7 @@ const CartPage = () => {
                                 {!isAuthenticated() && (
                                     <div className="auth-notice">
                                         <p>💡 Faça login para finalizar sua compra</p>
-                                        <a href="#/login" className="login-link">
+                                        <a href="/login" className="login-link">
                                             Fazer Login
                                         </a>
                                     </div>
@@ -364,7 +353,7 @@ const CartPage = () => {
                                         }
                                     </button>
                                     
-                                    <a href="#/" className="continue-shopping">
+                                    <a href="/" className="continue-shopping">
                                         ← Continuar comprando
                                     </a>
                                 </div>

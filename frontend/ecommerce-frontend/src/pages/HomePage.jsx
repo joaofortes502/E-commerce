@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useCart } from '../context/CartContext';
 
 // Componente da página inicial do e-commerce
 const HomePage = () => {
@@ -11,7 +12,7 @@ const HomePage = () => {
     const [notification, setNotification] = useState(null);
 
     // Simulação do contexto do carrinho - você substituirá pela importação real
-    const { addItem } = { addItem: async () => ({ success: true }) };
+    const { addItem } = useCart();
 
     // Carrega produtos quando o componente é montado ou categoria muda
     useEffect(() => {
