@@ -189,7 +189,7 @@ const HomePage = () => {
                                             </div>
                                             
                                             <h3 className="product-name">
-                                                <a href={`#/products/${product.id}`}>
+                                                <a href={`/products/${product.id}`}>
                                                     {product.name}
                                                 </a>
                                             </h3>
@@ -221,7 +221,7 @@ const HomePage = () => {
                                             {/* Botões de ação para cada produto */}
                                             <div className="product-actions">
                                                 <a 
-                                                    href={`#/products/${product.id}`}
+                                                    href={`/products/${product.id}`}
                                                     className="view-details-btn"
                                                 >
                                                     Ver Detalhes

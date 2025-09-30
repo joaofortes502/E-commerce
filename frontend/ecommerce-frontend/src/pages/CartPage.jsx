@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage = () => {
     // Estados para gerenciar o carrinho
     const [updating, setUpdating] = useState({});
     const [notification, setNotification] = useState(null);
-
+    const navigate = useNavigate();
     const { 
         items, 
         loading: cartLoading, 
@@ -100,7 +101,7 @@ const CartPage = () => {
         }
 
         // Redirecionar para checkout: navigate('/checkout');
-        window.location.hash = '/checkout';
+         navigate('/checkout');
     };
 
     // Formatação de preço

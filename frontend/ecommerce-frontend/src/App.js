@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
 import './App.css';
+import CheckoutPage from './pages/CheckoutPage';
 
 // Componente principal que estrutura toda nossa aplicação
 function App() {
@@ -55,6 +56,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <OrdersPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/checkout" 
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
                     </ProtectedRoute>
                   } 
                 />

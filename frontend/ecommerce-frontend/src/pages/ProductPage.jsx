@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useCart } from '../context/CartContext';
+import { useParams } from 'react-router-dom';
 
 const ProductPage = () => {
     // Estados para gerenciar o produto e interações
@@ -10,20 +12,16 @@ const ProductPage = () => {
     const [imageError, setImageError] = useState(false);
 
     // Simulação do contexto do carrinho - você substituirá pela importação real
-    const { addItem, isItemInCart, getItemQuantity } = {
-        addItem: async () => ({ success: true }),
-        isItemInCart: () => false,
-        getItemQuantity: () => 0
-    };
+    const { addItem, isItemInCart, getItemQuantity } = useCart();
 
     // Simula obter ID do produto da URL - você usará useParams do react-router-dom
-    const productId = 1; // Em produção: const { id } = useParams();
+    const {id} = useParams(); // Em produção: const { id } = useParams();
 
     useEffect(() => {
-        if (productId) {
+        if (id) {
             loadProduct();
         }
-    }, [productId]);
+    }, [id]);
 
     // Carrega dados do produto específico
     const loadProduct = async () => {
@@ -31,7 +29,7 @@ const ProductPage = () => {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+            const response = await fetch(`http://localhost:5000/api/products/${id}`);
             const data = await response.json();
 
             if (!response.ok) {
