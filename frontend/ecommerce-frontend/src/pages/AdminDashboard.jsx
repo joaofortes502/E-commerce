@@ -82,7 +82,7 @@ const AdminDashboard = () => {
     const loadOrders = async () => {
         try {
             setOrderLoading(true);
-            const response = await fetch('http://localhost:5000/api/orders/admin', {
+            const response = await fetch('http://localhost:5000/api/orders', {
                 headers: getAuthHeaders()
             });
             
