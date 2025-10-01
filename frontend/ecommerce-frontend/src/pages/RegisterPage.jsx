@@ -113,10 +113,10 @@ const RegisterPage = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
-                                        placeholder="Seu nome completo"
+                                        placeholder="Nome completo"
                                         disabled={loading}
                                     />
-                                    <span className="input-icon">👤</span>
+                                   
                                 </div>
                             </div>
 
@@ -133,7 +133,7 @@ const RegisterPage = () => {
                                         placeholder="seu@email.com"
                                         disabled={loading}
                                     />
-                                    <span className="input-icon">📧</span>
+                                    
                                 </div>
                             </div>
 
