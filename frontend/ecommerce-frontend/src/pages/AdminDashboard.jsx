@@ -14,15 +14,20 @@ const AdminDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [orderLoading, setOrderLoading] = useState(false);
     
+    // NOVO: Estados para fornecedores
+    const [suppliers, setSuppliers] = useState([]);
+    const [supplierLoading, setSupplierLoading] = useState(false);
+    
     // Estados para estatísticas gerais
     const [stats, setStats] = useState({
         totalProducts: 0,
         totalOrders: 0,
         totalRevenue: 0,
-        pendingOrders: 0
+        pendingOrders: 0,
+        totalSuppliers: 0 // NOVO
     });
     
-    // NOVO: Estados para estatísticas avançadas
+    // Estados para estatísticas avançadas
     const [dashboardStats, setDashboardStats] = useState({
         monthSales: { total_orders: 0, total_revenue: 0, month: '' },
         topProduct: null,
@@ -39,9 +44,30 @@ const AdminDashboard = () => {
         price: '',
         category: '',
         stock_quantity: '',
-        image_url: ''
+        image_url: '',
+        supplier_id: '', // NOVO
+        supplier_sku: '', // NOVO
+        cost_price: '' // NOVO
     });
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditingProduct, setIsEditingProduct] = useState(false);
+    
+    // NOVO: Estados para o formulário de fornecedor
+    const [supplierForm, setSupplierForm] = useState({
+        id: null,
+        name: '',
+        contact_name: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zip_code: '',
+        country: 'Brasil',
+        cnpj: '',
+        category: '',
+        notes: ''
+    });
+    const [isEditingSupplier, setIsEditingSupplier] = useState(false);
     
     // Estados para feedback visual
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -59,11 +85,37 @@ const AdminDashboard = () => {
         await Promise.all([
             loadProducts(),
             loadOrders(),
-            loadDashboardStats() // NOVA FUNÇÃO
+            loadSuppliers(), // NOVA FUNÇÃO
+            loadDashboardStats()
         ]);
     };
     
-    // NOVA FUNÇÃO: Carregar estatísticas avançadas
+    // NOVA FUNÇÃO: Carregar lista de fornecedores
+    const loadSuppliers = async () => {
+        try {
+            setSupplierLoading(true);
+            const response = await fetch('http://localhost:5000/api/suppliers', {
+                headers: getAuthHeaders()
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                setSuppliers(data.suppliers || []);
+                // Atualizamos estatísticas de fornecedores
+                setStats(prev => ({
+                    ...prev,
+                    totalSuppliers: data.suppliers?.length || 0
+                }));
+            }
+        } catch (error) {
+            console.error('Erro ao carregar fornecedores:', error);
+            showMessage('Erro ao carregar fornecedores', 'error');
+        } finally {
+            setSupplierLoading(false);
+        }
+    };
+    
+    // Função para carregar estatísticas avançadas
     const loadDashboardStats = async () => {
         try {
             setStatsLoading(true);
@@ -156,6 +208,8 @@ const AdminDashboard = () => {
         setTimeout(() => setMessage({ text: '', type: '' }), 5000);
     };
     
+    // ========== FUNÇÕES PARA PRODUTOS ==========
+    
     // Função para lidar com mudanças no formulário de produto
     const handleProductFormChange = (e) => {
         const { name, value } = e.target;
@@ -174,9 +228,12 @@ const AdminDashboard = () => {
             price: '',
             category: '',
             stock_quantity: '',
-            image_url: ''
+            image_url: '',
+            supplier_id: '',
+            supplier_sku: '',
+            cost_price: ''
         });
-        setIsEditing(false);
+        setIsEditingProduct(false);
     };
     
     // Função para preencher o formulário para edição
@@ -188,9 +245,12 @@ const AdminDashboard = () => {
             price: product.price,
             category: product.category,
             stock_quantity: product.stock_quantity,
-            image_url: product.image_url || ''
+            image_url: product.image_url || '',
+            supplier_id: product.supplier_id || '',
+            supplier_sku: product.supplier_sku || '',
+            cost_price: product.cost_price || ''
         });
-        setIsEditing(true);
+        setIsEditingProduct(true);
         // Rola até o formulário
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -206,35 +266,48 @@ const AdminDashboard = () => {
         }
         
         try {
-            const url = isEditing 
+            const url = isEditingProduct 
                 ? `http://localhost:5000/api/products/${productForm.id}`
                 : 'http://localhost:5000/api/products';
             
-            const method = isEditing ? 'PUT' : 'POST';
+            const method = isEditingProduct ? 'PUT' : 'POST';
             
+            const productData = {
+                name: productForm.name,
+                description: productForm.description,
+                price: parseFloat(productForm.price),
+                category: productForm.category,
+                stock_quantity: parseInt(productForm.stock_quantity) || 0,
+                image_url: productForm.image_url
+            };
+            
+            // Adiciona campos do fornecedor apenas se preenchidos
+            if (productForm.supplier_id) {
+                productData.supplier_id = parseInt(productForm.supplier_id);
+            }
+            if (productForm.supplier_sku) {
+                productData.supplier_sku = productForm.supplier_sku;
+            }
+            if (productForm.cost_price) {
+                productData.cost_price = parseFloat(productForm.cost_price);
+            }
+            console.log(productData);
             const response = await fetch(url, {
                 method: method,
                 headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    name: productForm.name,
-                    description: productForm.description,
-                    price: parseFloat(productForm.price),
-                    category: productForm.category,
-                    stock_quantity: parseInt(productForm.stock_quantity) || 0,
-                    image_url: productForm.image_url
-                })
+                body: JSON.stringify(productData)
             });
             
             const data = await response.json();
             
             if (data.success) {
                 showMessage(
-                    isEditing ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
+                    isEditingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
                     'success'
                 );
                 resetProductForm();
                 await loadProducts();
-                await loadDashboardStats(); // Recarrega estatísticas
+                await loadDashboardStats();
             } else {
                 showMessage(data.message || 'Erro ao salvar produto', 'error');
             }
@@ -261,7 +334,7 @@ const AdminDashboard = () => {
             if (data.success) {
                 showMessage('Produto removido com sucesso!', 'success');
                 await loadProducts();
-                await loadDashboardStats(); // Recarrega estatísticas
+                await loadDashboardStats();
             } else {
                 showMessage(data.message || 'Erro ao deletar produto', 'error');
             }
@@ -271,11 +344,157 @@ const AdminDashboard = () => {
         }
     };
     
+    // ========== NOVAS FUNÇÕES PARA FORNECEDORES ==========
+    
+    // Função para lidar com mudanças no formulário de fornecedor
+    const handleSupplierFormChange = (e) => {
+        const { name, value } = e.target;
+        setSupplierForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+    
+    // Função para resetar o formulário de fornecedor
+    const resetSupplierForm = () => {
+        setSupplierForm({
+            id: null,
+            name: '',
+            contact_name: '',
+            email: '',
+            phone: '',
+            address: '',
+            city: '',
+            state: '',
+            zip_code: '',
+            country: 'Brasil',
+            cnpj: '',
+            category: '',
+            notes: ''
+        });
+        setIsEditingSupplier(false);
+    };
+    
+    // Função para preencher o formulário para edição
+    const editSupplier = (supplier) => {
+        setSupplierForm({
+            id: supplier.id,
+            name: supplier.name,
+            contact_name: supplier.contact_name || '',
+            email: supplier.email || '',
+            phone: supplier.phone || '',
+            address: supplier.address || '',
+            city: supplier.city || '',
+            state: supplier.state || '',
+            zip_code: supplier.zip_code || '',
+            country: supplier.country || 'Brasil',
+            cnpj: supplier.cnpj || '',
+            category: supplier.category || '',
+            notes: supplier.notes || ''
+        });
+        setIsEditingSupplier(true);
+        // Rola até o formulário
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    // Função para submeter o formulário de fornecedor (criar ou editar)
+    const handleSupplierSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validações básicas
+        if (!supplierForm.name) {
+            showMessage('Nome do fornecedor é obrigatório', 'error');
+            return;
+        }
+        
+        try {
+            const url = isEditingSupplier 
+                ? `http://localhost:5000/api/suppliers/${supplierForm.id}`
+                : 'http://localhost:5000/api/suppliers';
+            
+            const method = isEditingSupplier ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: getAuthHeaders(),
+                body: JSON.stringify(supplierForm)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage(
+                    isEditingSupplier ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!',
+                    'success'
+                );
+                resetSupplierForm();
+                await loadSuppliers();
+            } else {
+                showMessage(data.message || 'Erro ao salvar fornecedor', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao salvar fornecedor:', error);
+            showMessage('Erro ao salvar fornecedor', 'error');
+        }
+    };
+    
+    // Função para deletar um fornecedor
+    const deleteSupplier = async (supplierId) => {
+        if (!window.confirm('Tem certeza que deseja deletar este fornecedor?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:5000/api/suppliers/${supplierId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Fornecedor removido com sucesso!', 'success');
+                await loadSuppliers();
+            } else {
+                showMessage(data.message || 'Erro ao deletar fornecedor', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao deletar fornecedor:', error);
+            showMessage('Erro ao deletar fornecedor', 'error');
+        }
+    };
+    
+    // Função para desativar um fornecedor
+    const deactivateSupplier = async (supplierId) => {
+        if (!window.confirm('Tem certeza que deseja desativar este fornecedor?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:5000/api/suppliers/${supplierId}/deactivate`, {
+                method: 'PATCH',
+                headers: getAuthHeaders()
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('Fornecedor desativado com sucesso!', 'success');
+                await loadSuppliers();
+            } else {
+                showMessage(data.message || 'Erro ao desativar fornecedor', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao desativar fornecedor:', error);
+            showMessage('Erro ao desativar fornecedor', 'error');
+        }
+    };
+    
     // Função para atualizar status de um pedido
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/orders/admin/${orderId}/status`, {
-                method: 'PUT',
+            const response = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+                method: 'PATCH',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ status: newStatus })
             });
@@ -285,7 +504,7 @@ const AdminDashboard = () => {
             if (data.success) {
                 showMessage('Status do pedido atualizado!', 'success');
                 await loadOrders();
-                await loadDashboardStats(); // Recarrega estatísticas
+                await loadDashboardStats();
             } else {
                 showMessage(data.message || 'Erro ao atualizar status', 'error');
             }
@@ -342,7 +561,7 @@ const AdminDashboard = () => {
         <div className="admin-dashboard">
             <div className="dashboard-header">
                 <h1>Painel Administrativo</h1>
-                <p>Gerencie produtos, pedidos e visualize estatísticas da loja</p>
+                <p>Gerencie produtos, pedidos, fornecedores e visualize estatísticas da loja</p>
             </div>
             
             {/* Mensagem de feedback */}
@@ -367,6 +586,12 @@ const AdminDashboard = () => {
                     📦 Produtos
                 </button>
                 <button 
+                    className={`tab ${activeTab === 'suppliers' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('suppliers')}
+                >
+                    🏢 Fornecedores
+                </button>
+                <button 
                     className={`tab ${activeTab === 'orders' ? 'active' : ''}`}
                     onClick={() => setActiveTab('orders')}
                 >
@@ -388,6 +613,14 @@ const AdminDashboard = () => {
                                 <div className="stat-content">
                                     <h3>Total de Produtos</h3>
                                     <p className="stat-value">{stats.totalProducts}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div className="stat-icon">🏢</div>
+                                <div className="stat-content">
+                                    <h3>Total de Fornecedores</h3>
+                                    <p className="stat-value">{stats.totalSuppliers}</p>
                                 </div>
                             </div>
                             
@@ -416,7 +649,7 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                         
-                        {/* NOVAS ESTATÍSTICAS AVANÇADAS */}
+                        {/* ESTATÍSTICAS AVANÇADAS */}
                         <div className="advanced-stats">
                             <h2>Estatísticas Avançadas</h2>
                             
@@ -545,6 +778,12 @@ const AdminDashboard = () => {
                                 </button>
                                 <button 
                                     className="action-btn"
+                                    onClick={() => setActiveTab('suppliers')}
+                                >
+                                    🏢 Adicionar Fornecedor
+                                </button>
+                                <button 
+                                    className="action-btn"
                                     onClick={() => setActiveTab('orders')}
                                 >
                                     👁️ Ver Pedidos
@@ -563,7 +802,7 @@ const AdminDashboard = () => {
                 {/* ABA: PRODUTOS */}
                 {activeTab === 'products' && (
                     <div className="products-section">
-                        <h2>{isEditing ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
+                        <h2>{isEditingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
                         
                         {/* Formulário de Produto */}
                         <form onSubmit={handleProductSubmit} className="product-form">
@@ -621,6 +860,49 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                             
+                            {/* NOVO: Campos do Fornecedor */}
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Fornecedor</label>
+                                    <select
+                                        name="supplier_id"
+                                        value={productForm.supplier_id}
+                                        onChange={handleProductFormChange}
+                                    >
+                                        <option value="">Selecione um fornecedor</option>
+                                        {suppliers.filter(s => s.status === 'active').map(supplier => (
+                                            <option key={supplier.id} value={supplier.id}>
+                                                {supplier.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>SKU do Fornecedor</label>
+                                    <input
+                                        type="text"
+                                        name="supplier_sku"
+                                        value={productForm.supplier_sku}
+                                        onChange={handleProductFormChange}
+                                        placeholder="Ex: FORN-001"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Preço de Custo (R$)</label>
+                                    <input
+                                        type="number"
+                                        name="cost_price"
+                                        value={productForm.cost_price}
+                                        onChange={handleProductFormChange}
+                                        placeholder="Ex: 1500.00"
+                                        step="0.01"
+                                        min="0"
+                                    />
+                                </div>
+                            </div>
+                            
                             <div className="form-group">
                                 <label>Descrição</label>
                                 <textarea
@@ -645,9 +927,9 @@ const AdminDashboard = () => {
                             
                             <div className="form-actions">
                                 <button type="submit" className="btn-primary">
-                                    {isEditing ? '✅ Salvar Alterações' : '➕ Criar Produto'}
+                                    {isEditingProduct ? '✅ Salvar Alterações' : '➕ Criar Produto'}
                                 </button>
-                                {isEditing && (
+                                {isEditingProduct && (
                                     <button 
                                         type="button" 
                                         className="btn-secondary"
@@ -677,6 +959,7 @@ const AdminDashboard = () => {
                                                 <th>Categoria</th>
                                                 <th>Preço</th>
                                                 <th>Estoque</th>
+                                                <th>Fornecedor</th>
                                                 <th>Ações</th>
                                             </tr>
                                         </thead>
@@ -691,6 +974,15 @@ const AdminDashboard = () => {
                                                         <span className={product.stock_quantity > 0 ? 'stock-available' : 'stock-empty'}>
                                                             {product.stock_quantity} unidades
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        {product.supplier_name ? (
+                                                            <span title={`${product.supplier_name} - ${product.supplier_contact}`}>
+                                                                {product.supplier_name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-muted">-</span>
+                                                        )}
                                                     </td>
                                                     <td className="actions-cell">
                                                         <button 
@@ -707,6 +999,223 @@ const AdminDashboard = () => {
                                                         >
                                                             🗑️
                                                         </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+                
+                {/* NOVA ABA: FORNECEDORES */}
+                {activeTab === 'suppliers' && (
+                    <div className="suppliers-section">
+                        <h2>{isEditingSupplier ? 'Editar Fornecedor' : 'Adicionar Novo Fornecedor'}</h2>
+                        
+                        {/* Formulário de Fornecedor */}
+                        <form onSubmit={handleSupplierSubmit} className="product-form">
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Nome do Fornecedor *</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={supplierForm.name}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: TechImport Brasil LTDA"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Nome do Contato</label>
+                                    <input
+                                        type="text"
+                                        name="contact_name"
+                                        value={supplierForm.contact_name}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: Carlos Silva"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={supplierForm.email}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: vendas@empresa.com.br"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Telefone</label>
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={supplierForm.phone}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: (11) 99999-9999"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>CNPJ</label>
+                                    <input
+                                        type="text"
+                                        name="cnpj"
+                                        value={supplierForm.cnpj}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: 12.345.678/0001-90"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Categoria</label>
+                                    <input
+                                        type="text"
+                                        name="category"
+                                        value={supplierForm.category}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: Eletrônicos"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Endereço</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={supplierForm.address}
+                                    onChange={handleSupplierFormChange}
+                                    placeholder="Ex: Av. Paulista, 1000"
+                                />
+                            </div>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Cidade</label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        value={supplierForm.city}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: São Paulo"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Estado</label>
+                                    <input
+                                        type="text"
+                                        name="state"
+                                        value={supplierForm.state}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: SP"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>CEP</label>
+                                    <input
+                                        type="text"
+                                        name="zip_code"
+                                        value={supplierForm.zip_code}
+                                        onChange={handleSupplierFormChange}
+                                        placeholder="Ex: 01310-100"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Observações</label>
+                                <textarea
+                                    name="notes"
+                                    value={supplierForm.notes}
+                                    onChange={handleSupplierFormChange}
+                                    placeholder="Observações sobre o fornecedor..."
+                                    rows="3"
+                                />
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button type="submit" className="btn-primary">
+                                    {isEditingSupplier ? '✅ Salvar Alterações' : '➕ Criar Fornecedor'}
+                                </button>
+                                {isEditingSupplier && (
+                                    <button 
+                                        type="button" 
+                                        className="btn-secondary"
+                                        onClick={resetSupplierForm}
+                                    >
+                                        ❌ Cancelar
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                        
+                        {/* Lista de Fornecedores */}
+                        <div className="suppliers-list">
+                            <h3>Fornecedores Cadastrados ({suppliers.length})</h3>
+                            
+                            {supplierLoading ? (
+                                <p className="loading">Carregando fornecedores...</p>
+                            ) : suppliers.length === 0 ? (
+                                <p className="empty-state">Nenhum fornecedor cadastrado ainda.</p>
+                            ) : (
+                                <div className="table-responsive">
+                                    <table className="products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nome</th>
+                                                <th>Contato</th>
+                                                <th>Email</th>
+                                                <th>Telefone</th>
+                                                <th>Categoria</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {suppliers.map(supplier => (
+                                                <tr key={supplier.id}>
+                                                    <td>{supplier.id}</td>
+                                                    <td>{supplier.name}</td>
+                                                    <td>{supplier.contact_name || '-'}</td>
+                                                    <td>{supplier.email || '-'}</td>
+                                                    <td>{supplier.phone || '-'}</td>
+                                                    <td>{supplier.category || '-'}</td>
+                                                    <td>
+                                                        <span className={`status-badge ${supplier.status === 'active' ? 'status-delivered' : 'status-cancelled'}`}>
+                                                            {supplier.status === 'active' ? 'Ativo' : 'Inativo'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="actions-cell">
+                                                        <button 
+                                                            className="btn-edit"
+                                                            onClick={() => editSupplier(supplier)}
+                                                            title="Editar"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button 
+                                                            className="btn-deactivate"
+                                                            onClick={() => deactivateSupplier(supplier.id)}
+                                                            title="Desativar"
+                                                        >
+                                                            ⏸️
+                                                        </button>
+                                                    
                                                     </td>
                                                 </tr>
                                             ))}

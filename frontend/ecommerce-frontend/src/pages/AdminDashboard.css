@@ -923,3 +923,108 @@
         align-items: center;
     }
 }
+
+.suppliers-section h2 {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+}
+
+.suppliers-list {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+}
+
+.suppliers-list h3 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+.text-muted {
+    color: #7f8c8d !important;
+    font-style: italic;
+}
+
+/* Botão de desativar */
+.btn-deactivate {
+    padding: 0.5rem 1rem;
+    background: #f39c12;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-deactivate:hover {
+    background: #e67e22;
+    transform: scale(1.1);
+}
+
+/* Melhorias para tabelas com mais colunas */
+.products-table th,
+.products-table td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.products-table th:nth-child(6),
+.products-table td:nth-child(6) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsividade para tabelas */
+@media (max-width: 1024px) {
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    .products-table th,
+    .products-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+        font-size: 0.7rem;
+    }
+    
+    .actions-cell {
+        flex-direction: row;
+        gap: 0.25rem;
+    }
+    
+    .btn-edit,
+    .btn-deactivate,
+    .btn-delete {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Estilo para campos de fornecedor no formulário de produtos */
+.form-row .form-group:has(select) {
+    grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+    .form-row .form-group:has(select) {
+        grid-column: span 1;
+    }
+}
+
+/* Destaque para produtos com fornecedor */
+.products-table tr:has(td:nth-child(6):not(.text-muted)) {
+    background-color: #f8fff8;
+}
+
+.products-table tr:has(td:nth-child(6):not(.text-muted)):hover {
+    background-color: #f0fff0;
+}
