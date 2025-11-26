@@ -570,3 +570,356 @@
         flex-direction: column;
     }
 }
+
+.advanced-stats h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.stat-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-section h3 {
+    font-size: 20px;
+    color: #34495e;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Vendas do Mês */
+.month-sales-card {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    color: white;
+}
+
+.sales-metric {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.metric-value.highlight {
+    font-size: 32px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Produto Mais Vendido */
+.top-product-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 10px;
+    color: white;
+    align-items: center;
+}
+
+.top-product-card .product-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.top-product-card .product-details {
+    flex: 1;
+}
+
+.top-product-card h4 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.top-product-card .product-category {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.top-product-card .product-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.top-product-card .product-stats strong {
+    font-size: 20px;
+}
+
+/* Ranking Top 5 */
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    transition: all 0.3s ease;
+}
+
+.ranking-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.ranking-item:nth-child(1) {
+    border-left-color: #f1c40f;
+    background: linear-gradient(90deg, #fff9e6 0%, #f8f9fa 100%);
+}
+
+.ranking-item:nth-child(2) {
+    border-left-color: #95a5a6;
+    background: linear-gradient(90deg, #f0f0f0 0%, #f8f9fa 100%);
+}
+
+.ranking-item:nth-child(3) {
+    border-left-color: #cd7f32;
+    background: linear-gradient(90deg, #fff0e6 0%, #f8f9fa 100%);
+}
+
+.ranking-position {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3498db;
+    min-width: 40px;
+    text-align: center;
+}
+
+.ranking-item:nth-child(1) .ranking-position {
+    color: #f1c40f;
+}
+
+.ranking-item:nth-child(2) .ranking-position {
+    color: #95a5a6;
+}
+
+.ranking-item:nth-child(3) .ranking-position {
+    color: #cd7f32;
+}
+
+.ranking-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ranking-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.ranking-category {
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.ranking-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.ranking-sold {
+    font-size: 14px;
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.ranking-revenue {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+/* Produtos com Baixo Estoque */
+.low-stock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.low-stock-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #fff;
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.low-stock-item:hover {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+    transform: translateY(-2px);
+}
+
+.stock-product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #ecf0f1;
+}
+
+.stock-product-info {
+    flex: 1;
+}
+
+.stock-product-info h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.stock-product-info p {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-bottom: 4px;
+}
+
+.stock-product-info .price {
+    font-size: 15px;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.stock-quantity {
+    min-width: 100px;
+    text-align: center;
+}
+
+.stock-quantity span {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.stock-low {
+    background: #fff3cd;
+    color: #856404;
+    border: 2px solid #ffc107;
+}
+
+.stock-zero {
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #dc3545;
+}
+
+.btn-restock {
+    padding: 10px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-restock:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+/* Estados vazios */
+.empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.success-state {
+    text-align: center;
+    padding: 30px;
+    color: #27ae60;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #3498db;
+    font-size: 16px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .month-sales-card {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .top-product-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .top-product-card .product-image {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .low-stock-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .ranking-stats {
+        align-items: center;
+    }
+}

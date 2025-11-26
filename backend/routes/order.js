@@ -27,4 +27,7 @@ router.patch('/:id/status', authenticateToken, OrderController.updateOrderStatus
 // GET - Obter resumo/estatísticas de pedidos (apenas admin)
 router.get('/admin/summary', authenticateToken, requireAdmin, OrderController.getOrdersSummary);
 
+// NOVA ROTA - Obter estatísticas detalhadas para dashboard (apenas admin)
+router.get('/admin/dashboard-stats', authenticateToken, requireAdmin, OrderController.getDashboardStats);
+
 module.exports = router;

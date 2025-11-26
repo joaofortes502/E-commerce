@@ -55,7 +55,7 @@ class Order {
         });
     }
 
-    // criar um pedido a partir do carrinho
+    // Criar um pedido a partir do carrinho
     static async createFromCart(userId, orderData = {}) {
         return new Promise(async (resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -88,9 +88,7 @@ class Order {
                         const orderId = orderResult.orderId;
                         
                         await Order._createOrderItems(db, orderId, cart.items);
-                        
                         await Order._updateProductStocks(db, cart.items);
-                        
                         await Order._clearUserCart(db, userId);
                         
                         db.run('COMMIT', (commitErr) => {
@@ -132,6 +130,7 @@ class Order {
         });
     }
 
+    // Buscar pedido por ID com seus itens
     static async findByIdWithItems(orderId) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -173,6 +172,7 @@ class Order {
         });
     }
 
+    // Buscar pedidos de um usuário
     static async findByUser(userId, options = {}) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -207,6 +207,7 @@ class Order {
         });
     }
 
+    // Buscar todos os pedidos (admin)
     static async findAll(options = {}) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -251,6 +252,7 @@ class Order {
         });
     }
 
+    // Atualizar status do pedido
     static async updateStatus(orderId, newStatus, userId = null) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -283,9 +285,87 @@ class Order {
         });
     }
 
+    // Buscar estatísticas de vendas do mês
+    static async getMonthSales(firstDay, lastDay) {
+        return new Promise((resolve, reject) => {
+            const db = new sqlite3.Database(DB_PATH);
+            
+            db.get(`
+                SELECT COUNT(*) as total_orders, 
+                       COALESCE(SUM(total_amount), 0) as total_revenue
+                FROM orders 
+                WHERE created_at >= ? AND created_at <= ?
+            `, [firstDay, lastDay], (err, result) => {
+                db.close();
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result || { total_orders: 0, total_revenue: 0 });
+                }
+            });
+        });
+    }
 
-    //auxliares --------------
+    // Buscar produto mais vendido
+    static async getTopProduct() {
+        return new Promise((resolve, reject) => {
+            const db = new sqlite3.Database(DB_PATH);
+            
+            db.get(`
+                SELECT 
+                    p.id,
+                    p.name,
+                    p.category,
+                    p.price,
+                    p.image_url,
+                    SUM(oi.quantity) as total_sold,
+                    COUNT(DISTINCT oi.order_id) as order_count,
+                    SUM(oi.quantity * oi.unit_price) as total_revenue
+                FROM order_items oi
+                INNER JOIN products p ON oi.product_id = p.id
+                GROUP BY p.id, p.name, p.category, p.price, p.image_url
+                ORDER BY total_sold DESC
+                LIMIT 1
+            `, [], (err, result) => {
+                db.close();
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result || null);
+                }
+            });
+        });
+    }
 
+    // Buscar top 5 produtos mais vendidos
+    static async getTopProducts(limit = 5) {
+        return new Promise((resolve, reject) => {
+            const db = new sqlite3.Database(DB_PATH);
+            
+            db.all(`
+                SELECT 
+                    p.id,
+                    p.name,
+                    p.category,
+                    SUM(oi.quantity) as total_sold,
+                    SUM(oi.quantity * oi.unit_price) as revenue
+                FROM order_items oi
+                INNER JOIN products p ON oi.product_id = p.id
+                GROUP BY p.id, p.name, p.category
+                ORDER BY total_sold DESC
+                LIMIT ?
+            `, [limit], (err, results) => {
+                db.close();
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results || []);
+                }
+            });
+        });
+    }
+
+    // ========== MÉTODOS AUXILIARES PRIVADOS ==========
 
     static _createOrderRecord(db, userId, cart, orderData) {
         return new Promise((resolve, reject) => {
@@ -293,10 +373,16 @@ class Order {
             const itemCount = cart.total_quantity;
             
             db.run(`
-                INSERT INTO orders (user_id, total_amount, item_count, shipping_address, notes)
-                VALUES (?, ?, ?, ?, ?)
-            `, [userId, totalAmount, itemCount, orderData.shipping_address || '', orderData.notes || ''], 
-            function(err) {
+                INSERT INTO orders (user_id, total_amount, item_count, shipping_address, notes, payment_method)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [
+                userId, 
+                totalAmount, 
+                itemCount, 
+                orderData.shipping_address || '', 
+                orderData.notes || '',
+                orderData.payment_method || 'pending'
+            ], function(err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -322,8 +408,15 @@ class Order {
                 db.run(`
                     INSERT INTO order_items (order_id, product_id, product_name, product_description, quantity, unit_price, subtotal)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                `, [orderId, item.product_id, item.product_name, item.product_description || '', 
-                    item.quantity, item.price_when_added, subtotal], (err) => {
+                `, [
+                    orderId, 
+                    item.product_id, 
+                    item.product_name, 
+                    item.product_description || '', 
+                    item.quantity, 
+                    item.price_when_added, 
+                    subtotal
+                ], (err) => {
                     if (err) {
                         reject(err);
                         return;

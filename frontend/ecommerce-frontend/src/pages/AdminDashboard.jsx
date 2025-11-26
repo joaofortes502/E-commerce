@@ -22,6 +22,15 @@ const AdminDashboard = () => {
         pendingOrders: 0
     });
     
+    // NOVO: Estados para estatísticas avançadas
+    const [dashboardStats, setDashboardStats] = useState({
+        monthSales: { total_orders: 0, total_revenue: 0, month: '' },
+        topProduct: null,
+        lowStockProducts: [],
+        topProductsRanking: []
+    });
+    const [statsLoading, setStatsLoading] = useState(false);
+    
     // Estados para o formulário de produto
     const [productForm, setProductForm] = useState({
         id: null,
@@ -49,8 +58,34 @@ const AdminDashboard = () => {
     const loadDashboardData = async () => {
         await Promise.all([
             loadProducts(),
-            loadOrders()
+            loadOrders(),
+            loadDashboardStats() // NOVA FUNÇÃO
         ]);
+    };
+    
+    // NOVA FUNÇÃO: Carregar estatísticas avançadas
+    const loadDashboardStats = async () => {
+        try {
+            setStatsLoading(true);
+            const response = await fetch('http://localhost:5000/api/orders/admin/dashboard-stats', {
+                headers: getAuthHeaders()
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                setDashboardStats({
+                    monthSales: data.stats.month_sales || { total_orders: 0, total_revenue: 0, month: '' },
+                    topProduct: data.stats.top_product || null,
+                    lowStockProducts: data.stats.low_stock_products || [],
+                    topProductsRanking: data.stats.top_products_ranking || []
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao carregar estatísticas do dashboard:', error);
+            showMessage('Erro ao carregar estatísticas avançadas', 'error');
+        } finally {
+            setStatsLoading(false);
+        }
     };
     
     // Função para carregar lista de produtos
@@ -199,6 +234,7 @@ const AdminDashboard = () => {
                 );
                 resetProductForm();
                 await loadProducts();
+                await loadDashboardStats(); // Recarrega estatísticas
             } else {
                 showMessage(data.message || 'Erro ao salvar produto', 'error');
             }
@@ -225,6 +261,7 @@ const AdminDashboard = () => {
             if (data.success) {
                 showMessage('Produto removido com sucesso!', 'success');
                 await loadProducts();
+                await loadDashboardStats(); // Recarrega estatísticas
             } else {
                 showMessage(data.message || 'Erro ao deletar produto', 'error');
             }
@@ -248,6 +285,7 @@ const AdminDashboard = () => {
             if (data.success) {
                 showMessage('Status do pedido atualizado!', 'success');
                 await loadOrders();
+                await loadDashboardStats(); // Recarrega estatísticas
             } else {
                 showMessage(data.message || 'Erro ao atualizar status', 'error');
             }
@@ -376,6 +414,124 @@ const AdminDashboard = () => {
                                     <p className="stat-value">{stats.pendingOrders}</p>
                                 </div>
                             </div>
+                        </div>
+                        
+                        {/* NOVAS ESTATÍSTICAS AVANÇADAS */}
+                        <div className="advanced-stats">
+                            <h2>Estatísticas Avançadas</h2>
+                            
+                            {statsLoading ? (
+                                <p className="loading">Carregando estatísticas...</p>
+                            ) : (
+                                <>
+                                    {/* Vendas do Mês */}
+                                    <div className="stat-section">
+                                        <h3>📅 Vendas de {dashboardStats.monthSales.month}</h3>
+                                        <div className="month-sales-card">
+                                            <div className="sales-metric">
+                                                <span className="metric-label">Pedidos no Mês:</span>
+                                                <span className="metric-value">{dashboardStats.monthSales.total_orders}</span>
+                                            </div>
+                                            <div className="sales-metric">
+                                                <span className="metric-label">Receita do Mês:</span>
+                                                <span className="metric-value highlight">
+                                                    {formatCurrency(dashboardStats.monthSales.total_revenue)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Produto Mais Vendido */}
+                                    <div className="stat-section">
+                                        <h3>🏆 Produto Mais Vendido</h3>
+                                        {dashboardStats.topProduct ? (
+                                            <div className="top-product-card">
+                                                {dashboardStats.topProduct.image_url && (
+                                                    <img 
+                                                        src={dashboardStats.topProduct.image_url} 
+                                                        alt={dashboardStats.topProduct.name}
+                                                        className="product-image"
+                                                    />
+                                                )}
+                                                <div className="product-details">
+                                                    <h4>{dashboardStats.topProduct.name}</h4>
+                                                    <p className="product-category">{dashboardStats.topProduct.category}</p>
+                                                    <div className="product-stats">
+                                                        <span>Unidades Vendidas: <strong>{dashboardStats.topProduct.total_sold}</strong></span>
+                                                        <span>Em {dashboardStats.topProduct.order_count} pedidos</span>
+                                                        <span>Receita: <strong>{formatCurrency(dashboardStats.topProduct.total_revenue)}</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="empty-state">Nenhuma venda registrada ainda.</p>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Top 5 Produtos */}
+                                    {dashboardStats.topProductsRanking.length > 0 && (
+                                        <div className="stat-section">
+                                            <h3>🔝 Top 5 Produtos Mais Vendidos</h3>
+                                            <div className="ranking-list">
+                                                {dashboardStats.topProductsRanking.map((product, index) => (
+                                                    <div key={product.id} className="ranking-item">
+                                                        <div className="ranking-position">#{index + 1}</div>
+                                                        <div className="ranking-info">
+                                                            <span className="ranking-name">{product.name}</span>
+                                                            <span className="ranking-category">{product.category}</span>
+                                                        </div>
+                                                        <div className="ranking-stats">
+                                                            <span className="ranking-sold">{product.total_sold} vendidos</span>
+                                                            <span className="ranking-revenue">{formatCurrency(product.revenue)}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Produtos com Baixo Estoque */}
+                                    <div className="stat-section">
+                                        <h3>⚠️ Produtos com Baixo Estoque (menos de 10 unidades)</h3>
+                                        {dashboardStats.lowStockProducts.length > 0 ? (
+                                            <div className="low-stock-list">
+                                                {dashboardStats.lowStockProducts.map(product => (
+                                                    <div key={product.id} className="low-stock-item">
+                                                        {product.image_url && (
+                                                            <img 
+                                                                src={product.image_url} 
+                                                                alt={product.name}
+                                                                className="stock-product-image"
+                                                            />
+                                                        )}
+                                                        <div className="stock-product-info">
+                                                            <h4>{product.name}</h4>
+                                                            <p>{product.category}</p>
+                                                            <p className="price">{formatCurrency(product.price)}</p>
+                                                        </div>
+                                                        <div className="stock-quantity">
+                                                            <span className={product.stock_quantity === 0 ? 'stock-zero' : 'stock-low'}>
+                                                                {product.stock_quantity} unidades
+                                                            </span>
+                                                        </div>
+                                                        <button 
+                                                            className="btn-restock"
+                                                            onClick={() => {
+                                                                editProduct(product);
+                                                                setActiveTab('products');
+                                                            }}
+                                                        >
+                                                            Reabastecer
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="success-state">✅ Todos os produtos têm estoque adequado!</p>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         
                         <div className="quick-actions">

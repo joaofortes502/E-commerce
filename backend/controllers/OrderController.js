@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 
 class OrderController {
     
@@ -322,6 +322,55 @@ class OrderController {
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
+            });
+        }
+    }
+
+    // Obter estatísticas detalhadas para o dashboard admin
+    static async getDashboardStats(req, res) {
+        try {
+            if (!req.user || req.user.type !== 'admin') {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Apenas administradores podem acessar estas estatísticas'
+                });
+            }
+
+            // 1. Total de vendas no mês atual
+            const currentDate = new Date();
+            const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+
+            const monthSales = await Order.getMonthSales(firstDayOfMonth, lastDayOfMonth);
+
+            // 2. Produto mais vendido
+            const topProduct = await Order.getTopProduct();
+
+            // 3. Produtos com baixo estoque (menos de 10 unidades)
+            const lowStockProducts = await Product.findLowStock(10);
+
+            // 4. Top 5 produtos mais vendidos
+            const topProducts = await Order.getTopProducts(5);
+
+            res.json({
+                success: true,
+                stats: {
+                    month_sales: {
+                        total_orders: monthSales.total_orders || 0,
+                        total_revenue: parseFloat(monthSales.total_revenue || 0),
+                        month: currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                    },
+                    top_product: topProduct || null,
+                    low_stock_products: lowStockProducts || [],
+                    top_products_ranking: topProducts || []
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro ao buscar estatísticas do dashboard:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor ao buscar estatísticas'
             });
         }
     }

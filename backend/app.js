@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const {initializeDatabase, createDefaultAdmin, createSampleProducts} = require('./database/init');
+const {initializeAll,initializeDatabase, createDefaultAdmin, createSampleProducts} = require('./database/init');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
@@ -27,19 +27,14 @@ app.get('/', (req, res) =>{
 })
 
 async function startServer(){
-    try {
-        await initializeDatabase();
-        await createDefaultAdmin();
-        await createSampleProducts();
-
-        app.listen(PORT, () =>{
-            console.log(`Servidor rodando na porta ${PORT}`);
-            console.log(`Acesse: http://localhost:${PORT}`);
-        })
-    } catch(error){
-        console.error("Erro ao iniciar o servidor:", error);
-        process.exit(1);
-    }
+    await initializeAll().then(() => {
+        app.listen(PORT, () => {
+                console.log(`Servidor rodando na porta ${PORT}`);
+            });
+        }).catch(error => {
+            console.error('Falha na inicialização do sistema:', error);
+            process.exit(1);
+        });
 }
 
 startServer();
