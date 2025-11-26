@@ -88,6 +88,7 @@ const AdminDashboard = () => {
             loadSuppliers(), // NOVA FUNÇÃO
             loadDashboardStats()
         ]);
+        console.log(dashboardStats);
     };
     
     // NOVA FUNÇÃO: Carregar lista de fornecedores
@@ -131,6 +132,7 @@ const AdminDashboard = () => {
                     lowStockProducts: data.stats.low_stock_products || [],
                     topProductsRanking: data.stats.top_products_ranking || []
                 });
+                console.log(data);
             }
         } catch (error) {
             console.error('Erro ao carregar estatísticas do dashboard:', error);
@@ -609,7 +611,7 @@ const AdminDashboard = () => {
                         
                         <div className="stats-grid">
                             <div className="stat-card">
-                                <div className="stat-icon">📦</div>
+                                
                                 <div className="stat-content">
                                     <h3>Total de Produtos</h3>
                                     <p className="stat-value">{stats.totalProducts}</p>
@@ -617,7 +619,7 @@ const AdminDashboard = () => {
                             </div>
                             
                             <div className="stat-card">
-                                <div className="stat-icon">🏢</div>
+                                
                                 <div className="stat-content">
                                     <h3>Total de Fornecedores</h3>
                                     <p className="stat-value">{stats.totalSuppliers}</p>
@@ -625,7 +627,7 @@ const AdminDashboard = () => {
                             </div>
                             
                             <div className="stat-card">
-                                <div className="stat-icon">🛒</div>
+                                
                                 <div className="stat-content">
                                     <h3>Total de Pedidos</h3>
                                     <p className="stat-value">{stats.totalOrders}</p>
@@ -633,7 +635,7 @@ const AdminDashboard = () => {
                             </div>
                             
                             <div className="stat-card">
-                                <div className="stat-icon">💰</div>
+                                
                                 <div className="stat-content">
                                     <h3>Receita Total</h3>
                                     <p className="stat-value">{formatCurrency(stats.totalRevenue)}</p>
@@ -641,7 +643,7 @@ const AdminDashboard = () => {
                             </div>
                             
                             <div className="stat-card">
-                                <div className="stat-icon">⏳</div>
+                                
                                 <div className="stat-content">
                                     <h3>Pedidos Pendentes</h3>
                                     <p className="stat-value">{stats.pendingOrders}</p>

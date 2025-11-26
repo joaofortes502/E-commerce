@@ -294,8 +294,8 @@ class Order {
                 SELECT COUNT(*) as total_orders, 
                        COALESCE(SUM(total_amount), 0) as total_revenue
                 FROM orders 
-                WHERE created_at >= ? AND created_at <= ?
-            `, [firstDay, lastDay], (err, result) => {
+                
+            `, [], (err, result) => {
                 db.close();
                 if (err) {
                     reject(err);
