@@ -117,19 +117,6 @@ class SupplierController {
                 });
             }
             
-            if (email && !this._isValidEmail(email)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Email inválido'
-                });
-            }
-            
-            if (cnpj && !this._isValidCNPJ(cnpj)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'CNPJ inválido'
-                });
-            }
             
             const newSupplier = await Supplier.create({
                 name: name.trim(),
@@ -224,12 +211,6 @@ class SupplierController {
             }
             
             if (email !== undefined) {
-                if (email && !this._isValidEmail(email)) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Email inválido'
-                    });
-                }
                 updateData.email = email?.trim() || '';
             }
             
@@ -258,12 +239,6 @@ class SupplierController {
             }
             
             if (cnpj !== undefined) {
-                if (cnpj && !this._isValidCNPJ(cnpj)) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'CNPJ inválido'
-                    });
-                }
                 updateData.cnpj = cnpj?.trim() || '';
             }
             

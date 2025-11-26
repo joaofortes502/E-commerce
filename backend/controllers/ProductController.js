@@ -156,105 +156,153 @@ class ProductController {
     }
 
     static async update(req, res) {
-        try {
-            const { id } = req.params;
-            const { name, description, price, category, stock_quantity, image_url } = req.body;
-            
-            if (!id || isNaN(id)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'ID do produto inválido'
-                });
-            }
-            
-            const updateData = {};
-            
-            if (name !== undefined) {
-                if (name.trim().length === 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Nome do produto não pode estar vazio'
-                    });
-                }
-                updateData.name = name.trim();
-            }
-            
-            if (description !== undefined) {
-                updateData.description = description?.trim() || '';
-            }
-            
-            if (price !== undefined) {
-                if (isNaN(price) || parseFloat(price) <= 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Preço deve ser um número maior que zero'
-                    });
-                }
-                updateData.price = parseFloat(price);
-            }
-            
-            if (category !== undefined) {
-                if (category.trim().length === 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Categoria não pode estar vazia'
-                    });
-                }
-                updateData.category = category.trim();
-            }
-            
-            if (stock_quantity !== undefined) {
-                if (isNaN(stock_quantity) || parseInt(stock_quantity) < 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Quantidade em estoque deve ser um número não negativo'
-                    });
-                }
-                updateData.stock_quantity = parseInt(stock_quantity);
-            }
-            
-            if (image_url !== undefined) {
-                updateData.image_url = image_url?.trim() || '';
-            }
-            
-            if (Object.keys(updateData).length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Nenhum campo válido fornecido para atualização'
-                });
-            }
-            
-            await Product.update(parseInt(id), updateData, req.user.id);
-            
-            const updatedProduct = await Product.findById(parseInt(id));
-            
-            res.json({
-                success: true,
-                message: 'Produto atualizado com sucesso',
-                product: updatedProduct
+    try {
+        const { id } = req.params;
+        const { 
+            name, 
+            description, 
+            price, 
+            category, 
+            stock_quantity, 
+            image_url,
+            supplier_id,
+            supplier_sku,
+            cost_price 
+        } = req.body;
+        
+        if (!id || isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID do produto inválido'
             });
-            
-        } catch (error) {
-            console.error('Erro ao atualizar produto:', error.message);
-            
-            if (error.message.includes('não encontrado')) {
-                res.status(404).json({
+        }
+        
+        const updateData = {};
+        
+        if (name !== undefined) {
+            if (name.trim().length === 0) {
+                return res.status(400).json({
                     success: false,
-                    message: 'Produto não encontrado'
+                    message: 'Nome do produto não pode estar vazio'
                 });
-            } else if (error.message.includes('deve ser') || error.message.includes('obrigatório')) {
-                res.status(400).json({
+            }
+            updateData.name = name.trim();
+        }
+        
+        if (description !== undefined) {
+            updateData.description = description?.trim() || '';
+        }
+        
+        if (price !== undefined) {
+            if (isNaN(price) || parseFloat(price) <= 0) {
+                return res.status(400).json({
                     success: false,
-                    message: error.message
+                    message: 'Preço deve ser um número maior que zero'
+                });
+            }
+            updateData.price = parseFloat(price);
+        }
+        
+        if (category !== undefined) {
+            if (category.trim().length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Categoria não pode estar vazia'
+                });
+            }
+            updateData.category = category.trim();
+        }
+        
+        if (stock_quantity !== undefined) {
+            if (isNaN(stock_quantity) || parseInt(stock_quantity) < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantidade em estoque deve ser um número não negativo'
+                });
+            }
+            updateData.stock_quantity = parseInt(stock_quantity);
+        }
+        
+        if (image_url !== undefined) {
+            updateData.image_url = image_url?.trim() || '';
+        }
+        
+        // NOVO: Campos do fornecedor
+        if (supplier_id !== undefined) {
+            if (supplier_id === '' || supplier_id === null) {
+                // Permite remover o fornecedor definindo como null
+                updateData.supplier_id = null;
+            } else if (isNaN(supplier_id) || parseInt(supplier_id) <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID do fornecedor deve ser um número válido'
                 });
             } else {
-                res.status(500).json({
-                    success: false,
-                    message: 'Erro interno do servidor'
-                });
+                updateData.supplier_id = parseInt(supplier_id);
             }
         }
+        
+        if (supplier_sku !== undefined) {
+            updateData.supplier_sku = supplier_sku?.trim() || '';
+        }
+        
+        if (cost_price !== undefined) {
+            if (cost_price === '' || cost_price === null) {
+                // Permite remover o preço de custo definindo como null
+                updateData.cost_price = null;
+            } else if (isNaN(cost_price) || parseFloat(cost_price) <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Preço de custo deve ser um número maior que zero'
+                });
+            } else {
+                updateData.cost_price = parseFloat(cost_price);
+            }
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nenhum campo válido fornecido para atualização'
+            });
+        }
+        
+        await Product.update(parseInt(id), updateData, req.user.id);
+        
+        const updatedProduct = await Product.findById(parseInt(id));
+        
+        res.json({
+            success: true,
+            message: 'Produto atualizado com sucesso',
+            product: updatedProduct
+        });
+        
+    } catch (error) {
+        console.error('Erro ao atualizar produto:', error.message);
+        
+        if (error.message.includes('não encontrado')) {
+            res.status(404).json({
+                success: false,
+                message: 'Produto não encontrado'
+            });
+        } else if (error.message.includes('Fornecedor não encontrado')) {
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        } else if (error.message.includes('deve ser') || error.message.includes('obrigatório')) {
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
+}
 
     static async destroy(req, res) {
         try {
